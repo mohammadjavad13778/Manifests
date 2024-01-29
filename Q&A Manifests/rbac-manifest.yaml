@@ -1,0 +1,44 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: ops
+  name: service-reader
+rules:
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "watch", "list"]
+------------
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: ops
+  name: devbind
+subjects:
+- kind: User
+  name: dev
+  apiGroup: "rbac.authorization.k8s.io"
+roleRef:
+  kind: Role
+  name: service-reader
+  apiGroup: "rbac.authorization.k8s.io"
+------------
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: /root/.minikube/ca.crt
+    server: https://192.168.49.2:8443
+  name: minikube
+contexts:
+- context:
+    cluster: minikube
+    namespace: ops
+    user: dev
+  name: dev-context
+current-context: dev-context
+kind: Config
+users:
+- name: dev
+  user:
+    client-certificate: /root/manifest/ops/dev.crt
+    client-key: /root/manifest/ops/dev.key
+
